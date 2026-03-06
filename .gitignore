@@ -1,0 +1,18 @@
+# ModelSim / QuestaSim
+vsim.wlf
+transcript
+modelsim.ini
+
+# Directorul de lucru (compilare)
+**/work/
+**/_info
+**/_vmake
+**/*.qdb
+**/*.qpg
+**/*.qtl
+
+# Fișiere de log și backup
+*.log
+*.bak
+*.vstf
+*.vcd
