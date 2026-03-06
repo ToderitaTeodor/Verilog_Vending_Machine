@@ -4,7 +4,7 @@ module vending_machine_fsm (
 	input			 rst_ni		  ,
 	input       	 apb_valid_i  ,
 	input 	   [7:0] money_i	  ,
-	input 	   [7:0] item_i		  ,
+	input 	   [3:0] item_i		  ,
 	input 	   [7:0] control_reg_i,
 	output reg [7:0] change_o	  ,
 	output reg  	 tranzaction_o,
@@ -27,21 +27,40 @@ localparam state_alarm   = 3'b101;
 always @(posedge clk_i or negedge rst_ni)
 if(~rst_ni) current_state <= state_idle  ; else
 			current_state <= future_state;
+
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni						 ) tranzaction_o <= 1'b0; else
+if(current_state == state_deliver) tranzaction_o <= 1'b1; else
+								   tranzaction_o <= 1'b0;
+
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni						 ) alarm_o <= 1'b0; else
+if(current_state == state_alarm  ) alarm_o <= 1'b1; else
+								   alarm_o <= 1'b0;
+								   
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni						 ) change_o <= 8'b0						 ; else
+if(current_state == state_deliver) change_o <= money_i - mem_item[item_i]; else
+if(current_state == state_error  ) change_o <= money_i					 ; else
+								   change_o <= 8'b0						 ;
+
 			
 always @(*)
 case (current_state)
 
-state_idle   : future_state <= (apb_valid_i) ? state_evalue : state_idle;
+state_idle   : future_state <=  (control_reg_i[0]) ? state_alarm  : 
+							    (control_reg_i[1]) ? state_admin  :
+								(apb_valid_i     ) ? state_evalue : state_idle;
 
 state_evalue : future_state <= (money_i >= mem_item[item_i]) ? state_deliver : state_error; 			  
 
-state_deliver: ;
+state_deliver: future_state <= state_idle;
 
 state_error  : future_state <= state_idle;
 
-state_admin	 :   ;
+state_admin	 : future_state <= (control_reg_i[1]) ? state_admin : state_idle;
 
-state_alarm  :  ;
+state_alarm  : future_state <= (control_reg_i[0]) ? state_alarm : state_idle;
 
 default: future_state <= state_idle;
         
