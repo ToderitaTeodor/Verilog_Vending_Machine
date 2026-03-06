@@ -5,9 +5,9 @@ module apb_interface #(
     parameter RDATA_WIDTH   = 8
 
 )(
-
 	input 						   clk_i     	,
 	input 						   rst_ni    	,
+	
 	input 						   psel_i    	,
 	input 						   penable_i 	,
 	input 						   pwrite_i  	, 
@@ -20,7 +20,42 @@ module apb_interface #(
 	output reg  			 [7:0] money_o      ,
 	output reg 				 [7:0] control_reg_o,
 	output reg				 [7:0] item_o		
-	
 );
 
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni								) control_reg_o <= 8'b0	   ; else
+if(paddr_i == 0x00 && pwrite_i && psel_i) control_reg_o <= pwdata_i;	
+
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni								) money_o <= 8'b0	 ; else
+if(paddr_i == 0x01 && pwrite_i && psel_i) money_o <= pwdata_i;
+
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni								) item_o <= 8'b0	; else
+if(paddr_i == 0x02 && pwrite_i && psel_i) item_o <= pwdata_i;
+
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni						  ) valid_o <= 1'b0; else 
+if(psel_i && penable_i && pwrite_i) valid_o <= 1'b1; else
+if(valid_o						  ) valid_o <= 1'b0;
+
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni ) pready_o <= 1'b0; else
+if(pready_o) pready_o <= 1'b0;
+
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni) prdata_o <= 8'b0; else
+if(psel_i && ~penable_i && ~pwrite_i)
+	case(paddr_i)
+	
+	0x00 : prdata_o <= control_reg_o;
+	
+	0x01 : prdata_o <= money_o;
+	
+	0x02 : prdata_o <= item_o;
+	
+	default : prdata_o <= 8'b0;
+	
+	endcase
+	
 endmodule
