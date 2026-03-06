@@ -9,7 +9,7 @@
 
 constraint transaction::wdata_c {soft wdata %4 == 0;}
 
-program test(mem_intf intf);
+program test(interface_output out_intf, interface_APB apb_intf);
   
   class my_trans extends transaction;
     
@@ -34,7 +34,7 @@ program test(mem_intf intf);
   
   initial begin
     //creating environment
-    env = new(intf);
+    env = new(out_intf, apb_intf);
     
     my_tr = new();
     

@@ -25,23 +25,24 @@ class environment;
   //event for synchronization between generator and test
   event gen_ended;
   
-  //virtual interface
-  virtual mem_intf mem_vif;
+ //virtual interface
+  virtual interface_output out_vif;
+  virtual interface_APB    apb_vif; // Adăugat pentru driver
   
   //constructor
-  function new(virtual mem_intf mem_vif);
+  function new(virtual interface_output out_vif, virtual interface_APB apb_vif);
     //get the interface from test
-    this.mem_vif = mem_vif;
+    this.out_vif = out_vif;
+    this.apb_vif = apb_vif; // Maparea noii interfețe
     
-    //creating the mailbox (Same handle will be shared across generator and driver)
+    //creating the mailbox
     gen2driv = new();
     mon2scb  = new();
     
-    //componentele de verificare sunt create
     //creating generator and driver
     gen  = new(gen2driv,gen_ended);
-    driv = new(mem_vif,gen2driv);
-    mon  = new(mem_vif,mon2scb);
+    driv = new(apb_vif,gen2driv); // Conectăm APB la Driver
+    mon  = new(out_vif,mon2scb);  // Conectăm Output la Monitor
     scb  = new(mon2scb);
   endfunction
   

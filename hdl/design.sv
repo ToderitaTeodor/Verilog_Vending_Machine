@@ -14,10 +14,8 @@ module memory
     
     //data signals
     input  [DATA_WIDTH-1:0] wdata,
-    output [DATA_WIDTH-1:0] rdata
+    output logic [DATA_WIDTH-1:0] rdata
   ); 
-  
-  reg [DATA_WIDTH-1:0] rdata;
   
   //Memory
   reg [DATA_WIDTH-1:0] mem [2**ADDR_WIDTH];

@@ -5,11 +5,11 @@
 //Samples the interface signals, captures into transaction packet and send the packet to scoreboard.
 
 //in macro-ul MON_IF se retine blocul de semnale de unde monitorul extrage datele
-`define MON_IF mem_vif.MONITOR.monitor_cb
+`define MON_IF out_vif.MONITOR.monitor_cb
 class monitor;
   
   //creating virtual interface handle
-  virtual mem_intf mem_vif;
+  virtual interface_output out_vif; // Modificat din mem_intf
   
   //se creaza portul prin care monitorul trimite scoreboardului datele colectate de pe interfata DUT-ului sub forma de tranzactii 
   //creating mailbox handle
@@ -17,9 +17,9 @@ class monitor;
   
   //cand se creaza obiectul de tip monitor (in fisierul environment.sv), interfata de pe care acesta colecteaza date este conectata la interfata reala a DUT-ului
   //constructor
-  function new(virtual mem_intf mem_vif,mailbox mon2scb);
+  function new(virtual interface_output out_vif, mailbox mon2scb); // Modificat din mem_intf
     //getting the interface
-    this.mem_vif = mem_vif;
+    this.out_vif = out_vif;
     //getting the mailbox handles from  environment 
     this.mon2scb = mon2scb;
   endfunction
@@ -32,15 +32,15 @@ class monitor;
       trans = new();
 
       //datele sunt citite pe frontul de ceas, informatiile preluate de pe semnale fiind retinute in oboiectul de tip tranzactie
-      @(posedge mem_vif.MONITOR.clk);
+      @(posedge out_vif.MONITOR.clk);
       wait(`MON_IF.rd_en || `MON_IF.wr_en);
         trans.addr  = `MON_IF.addr;
         trans.wr_en = `MON_IF.wr_en;
         trans.wdata = `MON_IF.wdata;
         if(`MON_IF.rd_en) begin
           trans.rd_en = `MON_IF.rd_en;
-          @(posedge mem_vif.MONITOR.clk);
-          @(posedge mem_vif.MONITOR.clk);
+          @(posedge out_vif.MONITOR.clk);
+          @(posedge out_vif.MONITOR.clk);
           trans.rdata = `MON_IF.rdata;
         end    
       // dupa ce s-au retinut informatiile referitoare la o tranzactie, continutul obiectului trans se trimite catre scoreboard

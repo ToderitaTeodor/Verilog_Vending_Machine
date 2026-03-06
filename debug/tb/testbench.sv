@@ -5,7 +5,8 @@
 //-------------------------------------------------------------------------
 
 //including interfcae and testcase files
-`include "interface.sv"
+`include "interface_output.sv"
+`include "interface_APB.sv"
 
 //-------------------------[NOTE]---------------------------------
 //Particular testcase can be run by uncommenting, and commenting the rest
@@ -32,20 +33,21 @@ module testbench;
   
   
   //creatinng instance of interface, inorder to connect DUT and testcase
-  mem_intf intf(clk,reset);
-  
-  //Testcase instance, interface handle is passed to test as an argument
-  test t1(intf);
-  
+  interface_output out_intf(clk, reset);
+  interface_APB    apb_intf(clk, reset);
+
+  //Testcase instance, interface handles are passed to test as arguments
+  test t1(out_intf, apb_intf);
+
   //DUT instance, interface signals are connected to the DUT ports
   memory DUT (
-    .clk(intf.clk),
-    .reset(intf.reset),
-    .addr(intf.addr),
-    .wr_en(intf.wr_en),
-    .rd_en(intf.rd_en),
-    .wdata(intf.wdata),
-    .rdata(intf.rdata)
+    .clk(apb_intf.clk),
+    .reset(apb_intf.reset),
+    .addr(apb_intf.addr),
+    .wr_en(apb_intf.wr_en),
+    .rd_en(apb_intf.rd_en),
+    .wdata(apb_intf.wdata),
+    .rdata(out_intf.rdata) // rdata este monitorizat pe interfața de ieșire
    );
   
   //enabling the wave dump
