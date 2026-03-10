@@ -42,7 +42,7 @@ if(valid_o						  ) valid_o <= 1'b0;
 always @(posedge clk_i or negedge rst_ni)
 if(~rst_ni ) pready_o <= 1'b0; else
 if(pready_o) pready_o <= 1'b0; else
-if(psel_i && ~penable_i) pready_o <= 1'b0; // pready_o va fi 1 mereu in al doilea tact de ceas 
+if(psel_i && ~penable_i) pready_o <= 1'b1; // pready_o va fi 1 mereu in al doilea tact de ceas 
 
 always @(posedge clk_i or negedge rst_ni)
 if(~rst_ni) prdata_o <= 8'b0; else
