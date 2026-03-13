@@ -1,41 +1,40 @@
-//-------------------------------------------------------------------------
-//						www.verificationguide.com
-//-------------------------------------------------------------------------
-interface interface_APB(input logic clk,reset);
+interface interface_APB #(
+  parameter ADDRESS_WIDTH = 8,
+  parameter WDATA_WIDTH   = 8,
+  parameter RDATA_WIDTH   = 8
+)(input logic clk_i, rst_ni);
   
-  //declaring the signals
-  logic [1:0] addr;
-  logic wr_en;
-  logic rd_en;
-  logic [7:0] wdata;
-  logic [7:0] rdata;
+  logic [ADDRESS_WIDTH-1:0] paddr_i;
+  logic                     psel_i;
+  logic                     penable_i;
+  logic                     pwrite_i;
+  logic [WDATA_WIDTH-1:0]   pwdata_i;
+  logic [RDATA_WIDTH-1:0]   prdata_o;
+  logic                     pready_o;
   
-  //semnalele din clocking block sunt sincrone cu frontul crescator de ceas
-  //driver clocking block
-  clocking driver_cb @(posedge clk);
-    //semnalele de intrare sunt citite o unitate de timp inainte frontului de ceas, iar semnalele de iesire sunt citite o unitate de timp dupa frontul de ceas; astfel se elimina situatiile in care se fac scrieri sau citiri in acelasi timp
+  clocking driver_cb @(posedge clk_i);
     default input #1 output #1;
-    output addr;
-    output wr_en;
-    output rd_en;
-    output wdata;
-    input  rdata;  
+    output paddr;
+    output psel_i;
+    output penable_i;
+    output pwrite_i;
+    output pwdata_i;
+    input  prdata_o;
+    input  pready_o;
   endclocking
   
-  //monitor clocking block
-  clocking monitor_cb @(posedge clk);
+  clocking monitor_cb @(posedge clk_i);
     default input #1 output #1;
-    input addr;
-    input wr_en;
-    input rd_en;
-    input wdata;
-    input rdata;  
+    input paddr;
+    input psel_i;
+    input penable_i;
+    input pwrite_i;
+    input pwdata_i;
+    input prdata_o;
+    input pready_o;  
   endclocking
   
-  //driver modport
-  modport DRIVER  (clocking driver_cb,input clk,reset);
-  
-  //monitor modport  
-  modport MONITOR (clocking monitor_cb,input clk,reset);
+  modport DRIVER  (clocking driver_cb, input clk_i, rst_ni);
+  modport MONITOR (clocking monitor_cb, input clk_i, rst_ni);
   
 endinterface

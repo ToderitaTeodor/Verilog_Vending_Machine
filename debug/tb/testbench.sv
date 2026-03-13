@@ -27,8 +27,8 @@ module testbench;
   
   //reset Generation
   initial begin
-    reset = 1;
-    #15 reset =0;
+    reset = 0;
+    #15 reset = 1;
   end
   
   
@@ -52,7 +52,12 @@ module testbench;
   
   //enabling the wave dump
   initial begin 
-    $dumpfile("dump.vcd"); $dumpvars;
+    $dumpfile("dump.vcd"); 
+    $dumpvars;
+    
+    // Add a delay to let the simulation run before stopping
+    #1000; 
+    $stop; 
   end
-  $stop
+
 endmodule
