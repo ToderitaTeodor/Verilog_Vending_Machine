@@ -12,7 +12,7 @@
 //Particular testcase can be run by uncommenting, and commenting the rest
 //`include "random_test.sv"
 //`include "wr_rd_test.sv"
-`include "default_rd_test.sv"
+//`include "default_rd_test.sv"
 //----------------------------------------------------------------
 
 
@@ -53,6 +53,7 @@ module testbench;
   //enabling the wave dump
   initial begin 
     $dumpfile("dump.vcd"); $dumpvars;
+    $stop;
   end
-  $stop
+  
 endmodule
