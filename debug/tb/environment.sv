@@ -3,7 +3,7 @@
 //-------------------------------------------------------------------------
 
 //in mediul de verificare se instantiaza toate componentele de verificare
-`include "transaction.sv"
+`include "out_transaction.sv"
 `include "generator.sv"
 `include "driver.sv"
 `include "monitor.sv"
