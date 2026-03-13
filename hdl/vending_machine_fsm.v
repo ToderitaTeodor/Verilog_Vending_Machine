@@ -4,7 +4,7 @@ module vending_machine_fsm (
 	input			 rst_ni		  ,
 	input       	 apb_valid_i  ,
 	input 	   [7:0] money_i	  ,
-	input 	   [3:0] item_i		  ,
+	input 	   [7:0] item_i		  ,
 	input 	   [7:0] control_reg_i,
 	output reg [7:0] change_o	  ,
 	output reg  	 tranzaction_o,
