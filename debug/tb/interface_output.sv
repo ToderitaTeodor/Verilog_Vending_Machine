@@ -6,7 +6,7 @@ interface interface_output #(
   logic                    success_o;
   logic [CHANGE_WIDTH-1:0] change_o;
   
-  clocking monitor_cb @(posedge clk);
+  clocking monitor_cb @(posedge clk_i);
     default input #1 output #1;
     input alarm_o;
     input success_o;

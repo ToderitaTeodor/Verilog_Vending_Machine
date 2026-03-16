@@ -14,7 +14,7 @@ interface interface_APB #(
   
   clocking driver_cb @(posedge clk_i);
     default input #1 output #1;
-    output paddr;
+    output paddr_i;
     output psel_i;
     output penable_i;
     output pwrite_i;
@@ -25,7 +25,7 @@ interface interface_APB #(
   
   clocking monitor_cb @(posedge clk_i);
     default input #1 output #1;
-    input paddr;
+    input paddr_i;
     input psel_i;
     input penable_i;
     input pwrite_i;
@@ -37,4 +37,14 @@ interface interface_APB #(
   modport DRIVER  (clocking driver_cb, input clk_i, rst_ni);
   modport MONITOR (clocking monitor_cb, input clk_i, rst_ni);
   
+
+  property paddr_stable_during_access;
+  @(posedge clk_i) psel_i |-> $stable(paddr_i);
+  endproperty
+
+  assert property (paddr_stable_during_access);
+
+
+
+
 endinterface
