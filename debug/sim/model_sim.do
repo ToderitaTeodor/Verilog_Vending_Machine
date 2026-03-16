@@ -4,8 +4,11 @@
 # Initializarea bibliotecii de lucru 
 #vlib work 
 
-# Compilarea fisierelor de design (hdl) 
-vlog ../../hdl/design.sv 
+# Compilarea tuturor fisierelor de vending machine (hdl) 
+vlog ../../hdl/*.v
+
+# doar daca exista fisiere .sv folosim comanda
+# vlog ../../hdl/*.sv 
 
 # Compilarea fisierelor de testbench cu adaugarea cailor de includere pentru macro-uri 
 vlog +incdir+../tb +incdir+../tests ../tb/testbench.sv 

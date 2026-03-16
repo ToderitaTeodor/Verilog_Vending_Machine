@@ -12,7 +12,7 @@
 //Particular testcase can be run by uncommenting, and commenting the rest
 //`include "random_test.sv"
 //`include "wr_rd_test.sv"
-`include "default_rd_test.sv"
+//`include "default_rd_test.sv"
 //----------------------------------------------------------------
 
 
@@ -37,18 +37,38 @@ module testbench;
   interface_APB    apb_intf(clk, reset);
 
   //Testcase instance, interface handles are passed to test as arguments
-  test t1(out_intf, apb_intf);
+  //test t1(out_intf, apb_intf);
 
-  //DUT instance, interface signals are connected to the DUT ports
-  memory DUT (
-    .clk(apb_intf.clk),
-    .reset(apb_intf.reset),
-    .addr(apb_intf.addr),
-    .wr_en(apb_intf.wr_en),
-    .rd_en(apb_intf.rd_en),
-    .wdata(apb_intf.wdata),
-    .rdata(out_intf.rdata) // rdata este monitorizat pe interfața de ieșire
-   );
+  logic        tb_valid_o;
+  logic [7:0]  tb_money_o;
+  logic [7:0]  tb_control_reg_o;
+  logic [7:0]  tb_item_o;
+
+
+
+  apb_interface  #(
+
+  .ADDRESS_WIDTH  (8),
+  .WDATA_WIDTH    (8),
+  .RDATA_WIDTH    (8)
+
+  )DUT_APB(
+  .clk_i     	    (apb_intf.clk_i),
+  .rst_ni    	    (apb_intf.rst_ni),
+  .psel_i    	    (apb_intf.psel_i),
+  .penable_i 	    (apb_intf.penable_i),
+  .pwrite_i  	    (apb_intf.pwrite_i), 
+  .paddr_i        (apb_intf.paddr_i),
+  .pwdata_i       (apb_intf.pwdata_i),
+  .prdata_o       (apb_intf.prdata_o),
+  .pready_o  	    (apb_intf.pready_o),
+
+  //Dut specific connections  
+  .valid_o       (tb_valid_o),
+  .money_o       (tb_money_o),
+  .control_reg_o (tb_control_reg_o),
+  .item_o        (tb_item_o)
+  );
   
   //enabling the wave dump
   initial begin 
