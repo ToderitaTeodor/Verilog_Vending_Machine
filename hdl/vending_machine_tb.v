@@ -88,7 +88,6 @@ initial begin
 	
 	write_reg(8'h01, 8'd52);
 	write_reg(8'h02, 8'd1);
-	write_reg(8'h00, 8'd4);
 	
 	@(posedge clk);
 	write_reg(8'h00, 8'd0);
@@ -97,7 +96,6 @@ initial begin
 	
 	write_reg(8'h01, 8'd12);
 	write_reg(8'h02, 8'd2);
-	write_reg(8'h00, 8'd4);
 	
 	@(posedge clk);
 	write_reg(8'h00, 8'd0);
