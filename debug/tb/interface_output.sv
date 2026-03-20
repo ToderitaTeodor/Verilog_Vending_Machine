@@ -1,39 +1,18 @@
-//-------------------------------------------------------------------------
-//						www.verificationguide.com
-//-------------------------------------------------------------------------
-interface interface_output(input logic clk,reset);
+interface interface_output #(
+  parameter CHANGE_WIDTH = 8
+)(input logic clk_i, rst_ni);
   
-  //declaring the signals
-  logic [1:0] addr;
-  logic wr_en;
-  logic rd_en;
-  logic [7:0] wdata;
-  logic [7:0] rdata;
+  logic                    alarm_o;
+  logic                    success_o;
+  logic [CHANGE_WIDTH-1:0] change_o;
   
-  //semnalele din clocking block sunt sincrone cu frontul crescator de ceas
-//   //driver clocking block
-//   //clocking driver_cb @(posedge clk);
-//     //semnalele de intrare sunt citite o unitate de timp inainte frontului de ceas, iar semnalele de iesire sunt citite o unitate de timp dupa frontul de ceas; astfel se elimina situatiile in care se fac scrieri sau citiri in acelasi timp
-//     default input #1 output #1;
-//     output addr;
-//     output wr_en;
-//     output rd_en;
-//     output wdata;
-//     input  rdata;  
-//   endclocking
-  
-  //monitor clocking block
-  clocking monitor_cb @(posedge clk);
+  clocking monitor_cb @(posedge clk_i);
     default input #1 output #1;
-    input addr;
-    input wr_en;
-    input rd_en;
-    input wdata;
-    input rdata;  
+    input alarm_o;
+    input success_o;
+    input change_o;
   endclocking
   
-  
-  //monitor modport  
-  modport MONITOR (clocking monitor_cb,input clk,reset);
+  modport MONITOR (clocking monitor_cb, input clk_i, rst_ni);
   
 endinterface
