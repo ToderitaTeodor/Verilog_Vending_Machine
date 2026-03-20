@@ -2,7 +2,6 @@ module vending_machine_fsm (
 
 	input 			 clk_i		  ,
 	input			 rst_ni		  ,
-	input       	 apb_valid_i  ,
 	input 	   [7:0] money_i	  ,
 	input 	   [7:0] item_i		  ,
 	input 	   [7:0] control_reg_i,
@@ -61,7 +60,7 @@ case (current_state)
 
 state_idle   : future_state <=  (control_reg_i[0]) ? state_alarm  : 
 							    (control_reg_i[1]) ? state_admin  :
-								(apb_valid_i     ) ? state_evalue : state_idle;
+								(control_reg_i[2]) ? state_evalue : state_idle;
 
 state_evalue : future_state <= (money_i >= mem_item[item_i]) ? state_deliver : state_error; 			  
 
