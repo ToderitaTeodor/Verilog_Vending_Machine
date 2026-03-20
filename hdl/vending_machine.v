@@ -25,7 +25,6 @@ module vending_machine #(
 );
 
 wire [7:0] money, control_reg, item;
-wire	   apb_valid;
 
 apb_interface #(
 
@@ -44,8 +43,7 @@ apb_interface #(
 	.pwdata_i  	  (pwdata_i   ),
 	.prdata_o  	  (prdata_o   ),
 	.pready_o  	  (pready_o	  ),
-	
-	.valid_o   	  (apb_valid  ),
+
 	.money_o      (money      ),
 	.control_reg_o(control_reg),
 	.item_o		  (item		  )
