@@ -54,8 +54,7 @@ vending_machine_fsm u_vending_machine_fsm(
 
 	.clk_i		  (clk_i ),
 	.rst_ni		  (rst_ni),
-	
-	.apb_valid_i  (apb_valid),
+    
 	.money_i	  (money),
 	.item_i		  (item),
 	.control_reg_i(control_reg),
