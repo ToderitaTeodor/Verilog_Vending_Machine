@@ -44,7 +44,18 @@ if(current_state == state_deliver) change_o <= money_i - mem_item[item_i]; else
 if(current_state == state_error  ) change_o <= money_i					 ; else
 								   change_o <= 8'b0						 ;
 
-			
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni						 ) 
+	begin
+		mem_item[0] <= 8'd10; 
+		mem_item[1] <= 8'd20;
+		mem_item[2] <= 8'd30;
+		mem_item[3] <= 8'd15;
+	end
+else
+
+if(current_state == state_admin  ) mem_item[item_i] <= money_i;
+
 always @(*)
 case (current_state)
 
