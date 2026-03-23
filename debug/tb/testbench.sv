@@ -39,7 +39,6 @@ module testbench;
   //Testcase instance, interface handles are passed to test as arguments
   //test t1(out_intf, apb_intf);
 
-  logic        tb_valid_o;
   logic [7:0]  tb_money_o;
   logic [7:0]  tb_control_reg_o;
   logic [7:0]  tb_item_o;
@@ -64,7 +63,6 @@ module testbench;
   .pready_o  	    (apb_intf.pready_o),
 
   //Dut specific connections  
-  .valid_o       (tb_valid_o),
   .money_o       (tb_money_o),
   .control_reg_o (tb_control_reg_o),
   .item_o        (tb_item_o)
