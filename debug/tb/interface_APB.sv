@@ -39,12 +39,21 @@ interface interface_APB #(
   
 
   property paddr_stable_during_access;
-  @(posedge clk_i) psel_i |-> $stable(paddr_i);
+    @(posedge clk_i) psel_i |=> $stable(paddr_i);
   endproperty
 
-  assert property (paddr_stable_during_access);
+  assert property (paddr_stable_during_access) 
+    else $error("[PROTOCOL VIOLATION] paddr_i unstable in ACCESS PHASE at: %0t", $time);
 
+  property pready_psel_is_eq;
+  @(posedge clk_i) pready_o |-> psel_i;
+  endproperty
 
-
-
+  assert property (pready_psel_is_eq)
+    else $error("[PROTOCOL VIOLATION] pready is not equal to psel at: %0t", $time);
+  
+  //penable |-> psel
+  //$fell(pready) |-> $(penable)
+  //$fell(psel) |-> $fell(pready)
+  //$fell(psel) |-> $fell(penalbe)
 endinterface
