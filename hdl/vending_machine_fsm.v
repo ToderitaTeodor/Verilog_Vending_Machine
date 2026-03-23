@@ -2,7 +2,6 @@ module vending_machine_fsm (
 
 	input 			 clk_i		  ,
 	input			 rst_ni		  ,
-	input       	 apb_valid_i  ,
 	input 	   [7:0] money_i	  ,
 	input 	   [7:0] item_i		  ,
 	input 	   [7:0] control_reg_i,
@@ -16,6 +15,10 @@ reg [7:0] mem_item [3:0];
 
 reg [2:0] current_state ; 
 reg [2:0] future_state  ; 
+
+reg new_transaction;
+
+reg [7:0] money_d;
 
 localparam state_idle 	 = 3'b000;
 localparam state_evalue  = 3'b001;
@@ -37,20 +40,43 @@ always @(posedge clk_i or negedge rst_ni)
 if(~rst_ni						 ) alarm_o <= 1'b0; else
 if(current_state == state_alarm  ) alarm_o <= 1'b1; else
 								   alarm_o <= 1'b0;
+								  
+
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni						 ) new_transaction <= 1'b0; else
+if(money_d != money_i            ) new_transaction <= 1'b1; else
+								   new_transaction <= 1'b0;
+                                   
+                                   
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni						 ) money_d <= 1'b0; else
+                                   money_d <= money_i; 
 								   
+                                  
 always @(posedge clk_i or negedge rst_ni)
 if(~rst_ni						 ) change_o <= 8'b0						 ; else
 if(current_state == state_deliver) change_o <= money_i - mem_item[item_i]; else
 if(current_state == state_error  ) change_o <= money_i					 ; else
 								   change_o <= 8'b0						 ;
 
-			
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni						 ) 
+	begin
+		mem_item[0] <= 8'd10; 
+		mem_item[1] <= 8'd20;
+		mem_item[2] <= 8'd30;
+		mem_item[3] <= 8'd15;
+	end
+else
+
+if(current_state == state_admin  ) mem_item[item_i] <= money_i;
+
 always @(*)
 case (current_state)
 
 state_idle   : future_state <=  (control_reg_i[0]) ? state_alarm  : 
 							    (control_reg_i[1]) ? state_admin  :
-								(apb_valid_i     ) ? state_evalue : state_idle;
+								(new_transaction ) ? state_evalue : state_idle;
 
 state_evalue : future_state <= (money_i >= mem_item[item_i]) ? state_deliver : state_error; 			  
 
