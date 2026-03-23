@@ -69,6 +69,27 @@ begin
 end
 endtask
 
+task read_reg(
+	input[ADDRESS_WIDTH-1:0] address
+);
+begin
+	psel    <= 1'b1;
+	penable <= 1'b0;
+	pwrite  <= 1'b0;
+	paddr   <= address;
+	
+	@(posedge clk);
+	penable <= 1'b1;
+	
+	wait(pready);
+	@(posedge clk);
+	
+	psel    <= 1'b0;
+	penable <= 1'b0;
+
+end
+endtask
+
 initial begin
 	clk = 0;
 	forever #(CLK_FREQ_TB/2.0) clk = ~clk;
@@ -87,34 +108,46 @@ initial begin
 	@(posedge clk);
 	
 	write_reg(8'h01, 8'd52);
+    read_reg (8'h01);
 	write_reg(8'h02, 8'd1);
+    read_reg (8'h02);
 	
 	@(posedge clk);
 	write_reg(8'h00, 8'd0);
+    read_reg (8'h00);
 	
 	repeat(10) @(posedge clk);
 	
 	write_reg(8'h01, 8'd12);
+    read_reg (8'h01);
 	write_reg(8'h02, 8'd2);
+    read_reg (8'h02);
 	
 	@(posedge clk);
 	write_reg(8'h00, 8'd0);
-	
+	read_reg (8'h00);
+    
 	repeat(10) @(posedge clk);
 	
 	write_reg(8'h00, 8'd1);
+    read_reg (8'h00);
 	
 	@(posedge clk);
 	write_reg(8'h00, 8'd0);
+    read_reg (8'h00);
 	
 	repeat(5) @(posedge clk);
 	
 	write_reg(8'h01, 8'd14);
+    read_reg (8'h01);
 	write_reg(8'h02, 8'd1);
+    read_reg (8'h02);
 	write_reg(8'h00, 8'd2);
+    read_reg (8'h00);
 	
 	@(posedge clk);
 	write_reg(8'h00, 8'd0);
+    read_reg (8'h00);
 	
 	#800;
 	
