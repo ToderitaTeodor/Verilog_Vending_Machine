@@ -1,4 +1,4 @@
-module apb_interface #(
+module apb_protocol #(
 
 	parameter ADDRESS_WIDTH = 8,
 	parameter WDATA_WIDTH   = 8,
