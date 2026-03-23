@@ -10,6 +10,7 @@ add wave -noupdate -label PREADY /venindg_machine_tb/DUT_test_bench/pready_o
 add wave -noupdate -divider <NULL>
 add wave -noupdate -label PADDR -radix unsigned /venindg_machine_tb/DUT_test_bench/paddr_i
 add wave -noupdate -label PWDATA -radix unsigned /venindg_machine_tb/DUT_test_bench/pwdata_i
+add wave -noupdate -label PRDATA -radix unsigned /venindg_machine_tb/prdata
 add wave -noupdate -divider <NULL>
 add wave -noupdate -label MONEY_REG -radix unsigned /venindg_machine_tb/DUT_test_bench/money
 add wave -noupdate -label ITEM_REG -radix unsigned /venindg_machine_tb/DUT_test_bench/item
@@ -20,7 +21,7 @@ add wave -noupdate -label change -radix unsigned /venindg_machine_tb/DUT_test_be
 add wave -noupdate -divider <NULL>
 add wave -noupdate -label success /venindg_machine_tb/DUT_test_bench/success_o
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {253552 ps} 0}
+WaveRestoreCursors {{Cursor 1} {283737 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 337
 configure wave -valuecolwidth 100
