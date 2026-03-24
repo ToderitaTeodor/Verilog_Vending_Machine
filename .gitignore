@@ -16,3 +16,4 @@ modelsim.ini
 *.bak
 *.vstf
 *.vcd
+/debug/sim/covhtmlreport
