@@ -8,6 +8,7 @@
 `include "generator.sv"
 `include "driver.sv"
 `include "monitor.sv"
+`include "out_monitor.sv"
 `include "coverage.sv"
 `include "scoreboard.sv"
 class environment;
