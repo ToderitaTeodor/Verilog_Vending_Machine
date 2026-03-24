@@ -6,37 +6,38 @@
 
 
 //se declara macro-ul DRIV_IF care va reprezenta interfata pe care apb_driverul va trimite date DUT-ului
-`define DRIV_IF mem_vif.apb_driver.apb_driver_cb
+`define DRIV_IF apb_vif.apb_driver.apb_driver_cb
 class apb_driver;
   
   //used to count the number of transactions
   int no_transactions;
   
   //creating virtual interface handle
-  virtual mem_intf mem_vif;
+  virtual interface_APB apb_vif;
   
   //se creaza portul prin care apb_driverul primeste datele la nivel abstract de la DUT
   //creating mailbox handle
   mailbox gen2driv;
   
   //constructor
-  function new(virtual mem_intf mem_vif,mailbox gen2driv);
+  function new(virtual interface_APB apb_vif,mailbox gen2driv);
     //cand se creaza apb_driverul, interfata pe care acesta trimite datele este conectata la interfata reala a DUT-ului
     //getting the interface
-    this.mem_vif = mem_vif;
+    this.apb_vif = apb_vif;
     //getting the mailbox handles from  environment 
     this.gen2driv = gen2driv;
   endfunction
   
   //Reset task, Reset the Interface signals to default/initial values
   task reset;
-    wait(mem_vif.reset);
+    wait(!apb_vif.reset);
     $display("--------- [apb_driver] Reset Started ---------");
-    `DRIV_IF.wr_en <= 0;
-    `DRIV_IF.rd_en <= 0;
-    `DRIV_IF.addr  <= 0;
-    `DRIV_IF.wdata <= 0;        
-    wait(!mem_vif.reset);
+    `DRIV_IF.paddr_i <= 0;
+    `DRIV_IF.psel_i <= 0;
+    `DRIV_IF.penable_i  <= 0;
+    `DRIV_IF.pwrite_i <= 0;
+    `DRIV_IF.pwdata_i <= 0;
+    wait(apb_vif.reset);
     $display("--------- [apb_driver] Reset Ended ---------");
   endtask
   
@@ -45,30 +46,38 @@ class apb_driver;
       transaction trans;
       
     //se asteapta ca modulul sa iasa din reset
-     wait(mem_vif.reset);//linie valabila daca resetul este activ in 0
-    //wait(!mem_vif.reset);//linie valabila daca resetul este activ in 1
+     wait(apb_vif.reset);//linie valabila daca resetul este activ in 0
+    //wait(!apb_vif.reset);//linie valabila daca resetul este activ in 1
     
     //daca nu are date de la generator, apb_driverul ramane cu executia la linia de mai jos, pana cand primeste respectivele date
       gen2driv.get(trans);
       $display("--------- [apb_driver-TRANSFER: %0d] ---------",no_transactions);
-      @(posedge mem_vif.apb_driver.clk);
-        `DRIV_IF.addr <= trans.addr;
-      if(trans.wr_en) begin
-        `DRIV_IF.wr_en <= trans.wr_en;
-        `DRIV_IF.wdata <= trans.wdata;
-        $display("\tADDR = %0h \tWDATA = %0h",trans.addr,trans.wdata);
-        @(posedge mem_vif.apb_driver.clk);
-      end
-      if(trans.rd_en) begin
-        `DRIV_IF.rd_en <= trans.rd_en;
-        @(posedge mem_vif.apb_driver.clk);
-        `DRIV_IF.rd_en <= 0;
-        @(posedge mem_vif.apb_driver.clk);
-        trans.rdata = `DRIV_IF.rdata;
-        $display("\tADDR = %0h \tRDATA = %0h",trans.addr,`DRIV_IF.rdata);
-      end
-      $display("-----------------------------------------");
-      no_transactions++;
+    repeat(trans.delay_between_transaction)@(posedge apb_vif.apb_driver.clk);
+    
+// SETUP phase
+    `DRIV_IF.paddr_i   <= trans.addr;
+    `DRIV_IF.pwrite_i  <= trans.pwrite;
+    if (trans.pwrite) // la tranzactia de scriere se pun date pe pwdata
+    	`DRIV_IF.pwdata_i  <= trans.data;
+    `DRIV_IF.psel_i    <= 1;
+    `DRIV_IF.penable_i <= 0;
+    
+    // ACCESS phase
+    @(posedge apb_vif.clk_i);
+    `DRIV_IF.penable_i <= 1;
+    
+    // așteaptă slave ready
+    wait(apb_vif.pready_o == 1);
+    
+    // terminare transfer
+    @(posedge apb_vif.clk_i);
+    `DRIV_IF.psel_i    <= 0;
+    `DRIV_IF.penable_i <= 0;
+    
+    $display("addr=%0h pwrite=%0b data=%0h delay=%0d",
+             trans.addr, trans.pwrite, trans.data, trans.delay_between_transaction);
+
+  no_transactions++;
   endtask
   
     
@@ -78,8 +87,8 @@ class apb_driver;
       fork
         //Thread-1: Waiting for reset
         begin
-          wait(!mem_vif.reset);//linie valabila daca resetul este activ in 0
-          //wait(mem_vif.reset);//linie valabila daca resetul este activ in 1
+          wait(!apb_vif.reset);//linie valabila daca resetul este activ in 0
+          //wait(apb_vif.reset);//linie valabila daca resetul este activ in 1
         end
         //Thread-2: Calling drive task
         begin
