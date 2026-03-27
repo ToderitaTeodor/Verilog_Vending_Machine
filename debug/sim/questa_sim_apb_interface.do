@@ -5,7 +5,7 @@
 vlib work
 
 # Compilare exclusiva pentru componentele APB si testul asociat
-vlog ../../hdl/apb_interface.v
+vlog ../../hdl/apb_protocol.v
 vlog ../tb/interface_APB.sv
 vlog ../tb/tb_apb_asserts.sv
 
