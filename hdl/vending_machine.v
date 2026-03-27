@@ -26,13 +26,13 @@ module vending_machine #(
 
 wire [7:0] money, control_reg, item;
 
-apb_interface #(
+apb_protocol #(
 
 	.ADDRESS_WIDTH(ADDRESS_WIDTH),
     .WDATA_WIDTH  (WDATA_WIDTH  ),
     .RDATA_WIDTH  (RDATA_WIDTH  )
 
-) u_apb_interface (
+) u_apb_protocol (
 	.clk_i     	  (clk_i      ),
 	.rst_ni    	  (rst_ni     ),
 	
