@@ -45,7 +45,7 @@ module testbench;
 
 
 
-  apb_interface  #(
+  apb_protocol  #(
 
   .ADDRESS_WIDTH  (8),
   .WDATA_WIDTH    (8),
