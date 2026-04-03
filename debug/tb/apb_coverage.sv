@@ -1,5 +1,5 @@
 //prin coverage, putem vedea ce situatii (de exemplu, ce tipuri de tranzactii) au fost generate in simulare; astfel putem masura stadiul la care am ajuns cu verificarea
-class coverage;
+class apb_coverage;
   
   input_apb_transaction trans_covered;
   
@@ -16,9 +16,10 @@ class coverage;
     // adaugati adresele tuturor registrilor pe care ii aveti in DUT (sunt documentati in specificatie)
     // bin-ul other_addresses este important deoarece vrem sa vedem ca au fost trimise tranzactii si la adrese care nu apartin unor registrii (in acest caz DUT-ul trebuie sa aserteze semnalul pslverr)
      address_cp: coverpoint trans_covered.addr{
-      bins addr_min = {0};
-      bins addr_max = {$};
-      bins other_addresses = default;
+      bins reg_control = {0};
+       bins reg_suma_introdusa = {1};
+       bins produsul = {2};
+       bins adrese_nefolosite = default;
     }
  
     
@@ -29,8 +30,17 @@ class coverage;
       bins lowest_value = {0};
       bins highest_value = {255};
     }
+    
+    
+        delay_cp: coverpoint trans_covered.delay_between_transaction {
+          bins big_values = {[20:$]};
+          bins medium_values = {[6:19]};
+          bins low_values = {[1:5]};
+      bins lowest_value = {0};
+          illegal_bins negative_values = {[-2000000:-1]};
+    }
     // facem un cross de acolo vine "cx" 
-    addres_operation_cx cross: address_cp , write_enable_cp;
+    addres_operation_cx: cross address_cp , write_enable_cp;
     
    // AICI NU FOLOSESC ACEASTA PARTE PENTRU CA CEA DE SUS E MULT MAI EXPLICITA
    // read_data_cp: coverpoint trans_covered.rdata {
@@ -60,5 +70,5 @@ class coverage;
   endfunction
   
   //o alta modalitate de a incheia declaratia unei clase este sa se scrie "endclass: numele_clasei"; acest lucru este util mai ales cand se declara mai multe clase in acelasi fisier; totusi, se recomanda ca fiecare fisier sa nu contina mai mult de o declaratie a unei clase
-endclass: coverage
+endclass
 

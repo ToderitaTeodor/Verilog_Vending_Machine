@@ -41,7 +41,7 @@ class apb_monitor;
       
       while (`MON_IF.psel_i == 0 && `MON_IF.penable_i == 0 ) begin
          @(posedge apb_vif.clk_i);
-        trans.delay_between_transaction++
+        trans.delay_between_transaction++;
     end
      // TASK: trebuie sa detectyez cand a venit o tranzactie pe protocolul apb, trebuie sa ////
 	  trans.addr   = `MON_IF.paddr_i;
@@ -51,9 +51,9 @@ class apb_monitor;
       else
         trans.data = `MON_IF.prdata_o;
 
-      cov_collector.semple(trans);
-      mon2scb.put(trans);
-    end 
+      //valorile datelro de pe interfata sunt inregistrate
+      cov_collector.sample(trans);
+     
       // dupa ce s-au retinut informatiile referitoare la o tranzactie, continutul obiectului trans se trimite catre scoreboard
         mon2scb.put(trans);
     end

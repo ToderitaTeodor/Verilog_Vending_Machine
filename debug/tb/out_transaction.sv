@@ -7,7 +7,7 @@ class out_transaction;
   //se declara atributele clasei
   //campurile declarate cu cuvantul cheie rand vor primi valori aleatoare la aplicarea functiei randomize()
   bit 			alarm;
-  bit 			success;
+  bit 			success; //0: nu a avut loc o tranzactie; 1: a avut loc o tranzactie
   bit [8-1:0] 	change;
   
   //constrangerile reprezinta un tip de membru al claselor din SystemVerilog, pe langa atribute si metode
@@ -21,8 +21,7 @@ class out_transaction;
   //aceasta functie afiseaza valorile aleatorizate ale atributelor clasei
   function void post_randomize();
     $display("--------- [Trans] post_randomize ------");
-    //$display("\t addr  = %0h",addr);
-    if(success) $display("\t change  = %0h\t alarm = %0h",change,alarm);
+    $display("\t success  = %0h\t change  = %0h\t alarm = %0h",success,change,alarm);
     $display("-----------------------------------------");
   endfunction
   

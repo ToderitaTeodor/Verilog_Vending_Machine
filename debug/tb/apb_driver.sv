@@ -6,7 +6,7 @@
 
 
 //se declara macro-ul DRIV_IF care va reprezenta interfata pe care apb_driverul va trimite date DUT-ului
-`define DRIV_IF apb_vif.apb_driver.apb_driver_cb
+`define DRIV_IF apb_vif.DRIVER.driver_cb
 class apb_driver;
   
   //used to count the number of transactions
@@ -28,31 +28,31 @@ class apb_driver;
     this.gen2driv = gen2driv;
   endfunction
   
-  //Reset task, Reset the Interface signals to default/initial values
+  //rst_ni task, rst_ni the Interface signals to default/initial values
   task reset;
-    wait(!apb_vif.reset);
-    $display("--------- [apb_driver] Reset Started ---------");
-    `DRIV_IF.paddr_i <= 0;
-    `DRIV_IF.psel_i <= 0;
-    `DRIV_IF.penable_i  <= 0;
-    `DRIV_IF.pwrite_i <= 0;
-    `DRIV_IF.pwdata_i <= 0;
-    wait(apb_vif.reset);
-    $display("--------- [apb_driver] Reset Ended ---------");
+    wait(!apb_vif.rst_ni);
+    $display("--------- [apb_driver] rst_ni Started ---------");
+    apb_vif.paddr_i <= 0;
+    apb_vif.psel_i <= 0;
+    apb_vif.penable_i  <= 0;
+    apb_vif.pwrite_i <= 0;
+    apb_vif.pwdata_i <= 0;
+    wait(apb_vif.rst_ni);
+    $display("--------- [apb_driver] rst_ni Ended ---------");
   endtask
   
   //drives the transaction items to interface signals
   task drive;
-      transaction trans;
+      input_apb_transaction trans;
       
-    //se asteapta ca modulul sa iasa din reset
-     wait(apb_vif.reset);//linie valabila daca resetul este activ in 0
-    //wait(!apb_vif.reset);//linie valabila daca resetul este activ in 1
+    //se asteapta ca modulul sa iasa din rst_ni
+     wait(apb_vif.rst_ni);//linie valabila daca rst_niul este activ in 0
+    //wait(!apb_vif.rst_ni);//linie valabila daca rst_niul este activ in 1
     
     //daca nu are date de la generator, apb_driverul ramane cu executia la linia de mai jos, pana cand primeste respectivele date
       gen2driv.get(trans);
       $display("--------- [apb_driver-TRANSFER: %0d] ---------",no_transactions);
-    repeat(trans.delay_between_transaction)@(posedge apb_vif.apb_driver.clk);
+    repeat(trans.delay_between_transaction)@(`DRIV_IF);
     
 // SETUP phase
     `DRIV_IF.paddr_i   <= trans.addr;
@@ -81,14 +81,14 @@ class apb_driver;
   endtask
   
     
-  //Cele doua fire de executie de mai jos ruleaza in paralel. Dupa ce primul dintre ele se termina al doilea este intrerupt automat. Daca se activeaza reset-ul, nu se mai transmit date. 
+  //Cele doua fire de executie de mai jos ruleaza in paralel. Dupa ce primul dintre ele se termina al doilea este intrerupt automat. Daca se activeaza rst_ni-ul, nu se mai transmit date. 
   task main;
     forever begin
       fork
-        //Thread-1: Waiting for reset
+        //Thread-1: Waiting for rst_ni
         begin
-          wait(!apb_vif.reset);//linie valabila daca resetul este activ in 0
-          //wait(apb_vif.reset);//linie valabila daca resetul este activ in 1
+          wait(!apb_vif.rst_ni);//linie valabila daca rst_niul este activ in 0
+          //wait(apb_vif.rst_ni);//linie valabila daca rst_niul este activ in 1
         end
         //Thread-2: Calling drive task
         begin
@@ -98,7 +98,7 @@ class apb_driver;
         end
       join_any
       disable fork;
-        reset(); //daca s a iesit din structura fork-join_any, inseamna ca s-a activat semnalul de reset
+        reset(); //daca s a iesit din structura fork-join_any, inseamna ca s-a activat semnalul de rst_ni
     end
   endtask
         
