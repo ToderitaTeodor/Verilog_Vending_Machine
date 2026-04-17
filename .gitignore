@@ -17,3 +17,4 @@ modelsim.ini
 *.vstf
 *.vcd
 /debug/sim/covhtmlreport
+/docs/.$FSM.drawio.bkp
