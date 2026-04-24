@@ -18,3 +18,4 @@ modelsim.ini
 *.vcd
 /debug/sim/covhtmlreport
 /docs/.$FSM.drawio.bkp
+*.bkp
