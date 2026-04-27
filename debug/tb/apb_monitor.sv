@@ -5,11 +5,15 @@
 //Samples the interface signals, captures into transaction packet and send the packet to scoreboard.
 
 //in macro-ul MON_IF se retine blocul de semnale de unde apb_monitorul extrage datele
-`define MON_IF mem_vif.MONITOR.apb_monitor_cb
+`define MON_IF apb_vif.monitor_cb
 class apb_monitor;
   
   //creating virtual interface handle
-  virtual mem_intf mem_vif;
+  virtual interface_APB apb_vif;
+  
+  //coverage collector 
+  apb_coverage cov_collector;
+  
   
   //se creaza portul prin care apb_monitorul trimite scoreboardului datele colectate de pe interfata DUT-ului sub forma de tranzactii 
   //creating mailbox handle
@@ -17,9 +21,11 @@ class apb_monitor;
   
   //cand se creaza obiectul de tip apb_monitor (in fisierul environment.sv), interfata de pe care acesta colecteaza date este conectata la interfata reala a DUT-ului
   //constructor
-  function new(virtual mem_intf mem_vif,mailbox mon2scb);
+  function new(virtual interface_APB apb_vif, mailbox mon2scb);
+    //instantierea 
+    cov_collector = new (); 
     //getting the interface
-    this.mem_vif = mem_vif;
+    this.apb_vif = apb_vif;
     //getting the mailbox handles from  environment 
     this.mon2scb = mon2scb;
   endfunction
@@ -28,23 +34,33 @@ class apb_monitor;
   task main;
     forever begin
       //se declara si se creaza obiectul de tip tranzactie care va contine datele preluate de pe interfata
-      transaction trans;
+      input_apb_transaction trans;
       trans = new();
 
       //datele sunt citite pe frontul de ceas, informatiile preluate de pe semnale fiind retinute in oboiectul de tip tranzactie
-      @(posedge mem_vif.MONITOR.clk);
-      wait(`MON_IF.rd_en || `MON_IF.wr_en);
-        trans.addr  = `MON_IF.addr;
-        trans.wr_en = `MON_IF.wr_en;
-        trans.wdata = `MON_IF.wdata;
-        if(`MON_IF.rd_en) begin
-          trans.rd_en = `MON_IF.rd_en;
-          @(posedge mem_vif.MONITOR.clk);
-          @(posedge mem_vif.MONITOR.clk);
-          trans.rdata = `MON_IF.rdata;
-        end    
+      //@(posedge apb_vif.clk_i);
+
+      while (`MON_IF.penable_i == 0 && `MON_IF.pready_o == 0 ) begin
+         @(posedge apb_vif.clk_i);
+        trans.delay_between_transaction++;
+    end
+     // TASK: trebuie sa detectyez cand a venit o tranzactie pe protocolul apb, trebuie sa ////
+	  trans.addr   = `MON_IF.paddr_i;
+      trans.pwrite = `MON_IF.pwrite_i;
+	  if(`MON_IF.pwrite_i)
+        trans.data = `MON_IF.pwdata_i;
+      else
+        trans.data = `MON_IF.prdata_o;
+
+      //valorile datelro de pe interfata sunt inregistrate
+      cov_collector.sample(trans);
+     
       // dupa ce s-au retinut informatiile referitoare la o tranzactie, continutul obiectului trans se trimite catre scoreboard
         mon2scb.put(trans);
+      
+      $display("--------- [apb_monitor-TRANSFER: %0p], time %0t ---------",trans,$time);
+
+       @(posedge apb_vif.clk_i);
     end
   endtask
   
