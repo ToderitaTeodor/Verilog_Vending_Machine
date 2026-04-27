@@ -25,6 +25,7 @@ module vending_machine #(
 );
 
 wire [7:0] money, control_reg, item;
+wire enable, tick;
 
 apb_protocol #(
 
@@ -49,21 +50,31 @@ apb_protocol #(
 	.item_o		  (item		  )
 );
 
-
 vending_machine_fsm u_vending_machine_fsm(
 
-	.clk_i		  (clk_i ),
-	.rst_ni		  (rst_ni),
-    
-	.money_i	  (money),
-	.item_i		  (item),
+	.clk_i		  (clk_i      ),
+	.rst_ni		  (rst_ni     ),
+	.tick_i       (tick       ),
+	.money_i	  (money      ),
+	.item_i		  (item       ),
 	.control_reg_i(control_reg),
-	
-	.change_o	  (change_o),
-	.tranzaction_o(success_o),
-	.alarm_o	  (alarm_o)
+	.change_o	  (change_o   ),
+	.enable_o     (enable     ),
+ 	.tranzaction_o(success_o  ),
+	.alarm_o      (alarm_o    )
 
 );
+
+counter#(
+	.CLK_FREQ(10E6),
+	.DELAY_S (2)
+) u_counter (
+	.clk_i   (clk_i ),
+	.rst_ni  (rst_ni),
+    .enable_i(enable),
+	.tick_o  (tick  )
+);
+
 
 
 
