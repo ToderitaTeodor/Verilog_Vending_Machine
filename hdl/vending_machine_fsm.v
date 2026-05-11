@@ -1,11 +1,13 @@
-module vending_machine_fsm (
+	module vending_machine_fsm (
 
 	input 			 clk_i		  ,
 	input			 rst_ni		  ,
+  	input 			 tick_i		  ,
 	input 	   [7:0] money_i	  ,
 	input 	   [7:0] item_i		  ,
 	input 	   [7:0] control_reg_i,
 	output reg [7:0] change_o	  ,
+  	output reg 		 enable_o	  ,
 	output reg  	 tranzaction_o,
 	output reg 		 alarm_o
 
@@ -37,17 +39,24 @@ if(current_state == state_deliver) tranzaction_o <= 1'b1; else
 								   tranzaction_o <= 1'b0;
 
 always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni						 ) enable_o <= 1'b0; else
+if(current_state == state_alarm  ) enable_o <= 1'b1; else
+								   enable_o <= 1'b0;
+  
+always @(posedge clk_i or negedge rst_ni)
 if(~rst_ni						 ) alarm_o <= 1'b0; else
 if(current_state == state_alarm  ) alarm_o <= 1'b1; else
-								   alarm_o <= 1'b0;
-								  
+								   alarm_o <= 1'b0;							  
 
 always @(posedge clk_i or negedge rst_ni)
 if(~rst_ni						 ) new_transaction <= 1'b0; else
 if(money_d != money_i            ) new_transaction <= 1'b1; else
 								   new_transaction <= 1'b0;
                                    
-                                   
+always @(posedge clk_i or negedge rst_ni)
+if(~rst_ni						 ) money_d <= 1'b0; else
+                                   money_d <= money_i;   
+	
 always @(posedge clk_i or negedge rst_ni)
 if(~rst_ni						 ) money_d <= 1'b0; else
                                    money_d <= money_i; 
@@ -55,8 +64,8 @@ if(~rst_ni						 ) money_d <= 1'b0; else
                                   
 always @(posedge clk_i or negedge rst_ni)
 if(~rst_ni						 ) change_o <= 8'b0						 ; else
-if(current_state == state_deliver) change_o <= money_i - mem_item[item_i]; else
-if(current_state == state_error  ) change_o <= money_i					 ; else
+if(current_state == state_deliver) change_o <= money_d - mem_item[item_i]; else
+if(current_state == state_error  ) change_o <= money_d					 ; else
 								   change_o <= 8'b0						 ;
 
 always @(posedge clk_i or negedge rst_ni)
@@ -69,7 +78,7 @@ if(~rst_ni						 )
 	end
 else
 
-if(current_state == state_admin  ) mem_item[item_i] <= money_i;
+if(current_state == state_admin  ) mem_item[item_i] <= money_d;
 
 always @(*)
 case (current_state)
@@ -78,7 +87,7 @@ state_idle   : future_state <=  (control_reg_i[0]) ? state_alarm  :
 							    (control_reg_i[1]) ? state_admin  :
 								(new_transaction ) ? state_evalue : state_idle;
 
-state_evalue : future_state <= (money_i >= mem_item[item_i]) ? state_deliver : state_error; 			  
+state_evalue : future_state <= (money_d >= mem_item[item_i]) ? state_deliver : state_error; 			  
 
 state_deliver: future_state <= state_idle;
 
@@ -86,7 +95,7 @@ state_error  : future_state <= state_idle;
 
 state_admin	 : future_state <= (control_reg_i[1]) ? state_admin : state_idle;
 
-state_alarm  : future_state <= (control_reg_i[0]) ? state_alarm : state_idle;
+state_alarm  : future_state <= (tick_i) ? state_alarm : state_idle;
 
 default: future_state <= state_idle;
         
