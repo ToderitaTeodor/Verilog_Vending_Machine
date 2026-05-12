@@ -1,0 +1,52 @@
+name: Vivado SystemVerilog Simulation
+
+on: 
+  push:
+    branches: [ main, develop ]
+  pull_request:
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+
+      # 2. Checkout your repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 3. Run the Vivado Docker container and execute the simulation
+      - name: Compile and Simulate with Vivado Xsim
+        uses: addnab/docker-run-action@v3
+        with:
+          image: gusanagy/xilinx-vivado:latest
+          options: -v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }}
+          run: |
+            if [ -f "/opt/Xilinx/Vivado/2024.1/settings64.sh" ]; then
+              source /opt/Xilinx/Vivado/2024.1/settings64.sh
+            elif [ -f "/tools/Xilinx/Vivado/2024.1/settings64.sh" ]; then
+              source /tools/Xilinx/Vivado/2024.1/settings64.sh
+            fi
+
+            echo "=== Compiling RTL and Testbench ==="
+            # Compile standard Verilog files
+            xvlog -sv hdl/*.v
+            
+            # Compile SystemVerilog files (including include directories for macros)
+            xvlog -sv -i debug/tb -i debug/tests debug/tb/*.sv debug/tests/random_test.sv
+            
+            echo "=== Elaborating the Design ==="
+            # Link the compiled files into a simulation snapshot
+            xelab -debug typical -top testbench -snapshot tb_snap
+            
+            echo "=== Running Simulation ==="
+            # Run the simulation headless until $finish or $stop
+            xsim tb_snap -R
