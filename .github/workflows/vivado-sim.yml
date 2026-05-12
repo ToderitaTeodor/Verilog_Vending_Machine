@@ -2,7 +2,7 @@ name: Vivado SystemVerilog Simulation
 
 on: 
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, test/vivado_github_actions]
   pull_request:
 
 jobs:
