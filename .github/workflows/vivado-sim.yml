@@ -2,7 +2,7 @@ name: Vivado SystemVerilog Simulation
 
 on: 
   push:
-    branches: [ main, develop, test/vivado_github_actions ]
+    branches: [ main, develop ]
   pull_request:
 
 jobs:
@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      # 1. Clear space FIRST
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
@@ -23,30 +24,31 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 3. Run the Vivado Docker container and execute the simulation
+      # 3. Pull the image and run the simulation directly via shell
       - name: Compile and Simulate with Vivado Xsim
-        uses: addnab/docker-run-action@v3
-        with:
-          image: gusanagy/xilinx-vivado:latest
-          options: -v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }}
-          run: |
-            if [ -f "/opt/Xilinx/Vivado/2024.1/settings64.sh" ]; then
-              source /opt/Xilinx/Vivado/2024.1/settings64.sh
-            elif [ -f "/tools/Xilinx/Vivado/2024.1/settings64.sh" ]; then
-              source /tools/Xilinx/Vivado/2024.1/settings64.sh
-            fi
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:${{ github.workspace }} \
+            -w ${{ github.workspace }} \
+            gusanagy/xilinx-vivado:latest \
+            bash -c '
+              # Source Vivado environment
+              if [ -f "/opt/Xilinx/Vivado/2024.1/settings64.sh" ]; then
+                source /opt/Xilinx/Vivado/2024.1/settings64.sh
+              elif [ -f "/tools/Xilinx/Vivado/2024.1/settings64.sh" ]; then
+                source /tools/Xilinx/Vivado/2024.1/settings64.sh
+              else
+                echo "Could not find Vivado settings64.sh file"
+                exit 1
+              fi
 
-            echo "=== Compiling RTL and Testbench ==="
-            # Compile standard Verilog files
-            xvlog -sv hdl/*.v
-            
-            # Compile SystemVerilog files (including include directories for macros)
-            xvlog -sv -i debug/tb -i debug/tests debug/tb/*.sv debug/tests/random_test.sv
-            
-            echo "=== Elaborating the Design ==="
-            # Link the compiled files into a simulation snapshot
-            xelab -debug typical -top testbench -snapshot tb_snap
-            
-            echo "=== Running Simulation ==="
-            # Run the simulation headless until $finish or $stop
-            xsim tb_snap -R
+              echo "=== Compiling RTL and Testbench ==="
+              xvlog -sv hdl/*.v
+              xvlog -sv -i debug/tb -i debug/tests debug/tb/*.sv debug/tests/random_test.sv
+              
+              echo "=== Elaborating the Design ==="
+              xelab -debug typical -top testbench -snapshot tb_snap
+              
+              echo "=== Running Simulation ==="
+              xsim tb_snap -R
+            '
