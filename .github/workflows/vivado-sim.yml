@@ -1,16 +1,13 @@
-name: Vivado SystemVerilog Simulation
+name: Questa CI Simulation
 
-on: 
-  push:
-    branches: [ main, develop, test/vivado_github_actions]
-  pull_request:
+on: [push, pull_request]
 
 jobs:
   simulate:
     runs-on: ubuntu-latest
     
     steps:
-      # 1. Clear space FIRST
+      # Clear space (Questa is still 15GB, so we need room)
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
@@ -20,35 +17,28 @@ jobs:
           remove-codeql: 'true'
           remove-docker-images: 'true'
 
-      # 2. Checkout your repository
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 3. Pull the image and run the simulation directly via shell
-      - name: Compile and Simulate with Vivado Xsim
+      - name: Compile and Simulate with Questa Starter Edition
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:${{ github.workspace }} \
             -w ${{ github.workspace }} \
-            gusanagy/xilinx-vivado:2024.1-x11 \
+            # We use HDL Containers, a highly trusted source for EDA tools
+            ghcr.io/hdl/containers/intel/questa:21.1 \
             bash -c '
-              # Source Vivado environment
-              if [ -f "/opt/Xilinx/Vivado/2024.1/settings64.sh" ]; then
-                source /opt/Xilinx/Vivado/2024.1/settings64.sh
-              elif [ -f "/tools/Xilinx/Vivado/2024.1/settings64.sh" ]; then
-                source /tools/Xilinx/Vivado/2024.1/settings64.sh
-              else
-                echo "Could not find Vivado settings64.sh file"
-                exit 1
-              fi
-
               echo "=== Compiling RTL and Testbench ==="
-              xvlog -sv hdl/*.v
-              xvlog -sv -i debug/tb -i debug/tests debug/tb/*.sv debug/tests/random_test.sv
+              # Create the working library
+              vlib work
               
-              echo "=== Elaborating the Design ==="
-              xelab -debug typical -top testbench -snapshot tb_snap
+              # Compile standard Verilog files
+              vlog hdl/*.v
+              
+              # Compile SystemVerilog files and the top testbench
+              vlog +incdir+debug/tb +incdir+debug/tests debug/tb/*.sv debug/tests/random_test.sv
               
               echo "=== Running Simulation ==="
-              xsim tb_snap -R
+              # Run the simulator in console mode (-c), disable optimizations that hide signals (-voptargs="+acc")
+              vsim -c -voptargs="+acc" testbench -do "run -all; quit"
             '
