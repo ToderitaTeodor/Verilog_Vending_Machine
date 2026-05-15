@@ -1,0 +1,23 @@
+name: QuestaSim Remote Test
+
+on: [push, pull_request]
+
+jobs:
+  run-sim:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/george-irr/questasim-final:2021.2
+      credentials:
+        username: george-irr
+        password: ${{ secrets.GHCR_PAT }}
+      options: --mac-address 28:cd:c4:6c:56:91
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Verify License and Run
+        run: |
+          export LM_LICENSE_FILE=/opt/questasim/license.dat
+          # Run a simple check or your project script
+          /opt/questasim/questasim/linux_x86_64/vsim -c -do "run -all; quit"
