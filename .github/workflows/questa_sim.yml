@@ -19,5 +19,6 @@ jobs:
       - name: Verify License and Run
         run: |
           export LM_LICENSE_FILE=/opt/questasim/license.dat
-          # Run a simple check or your project script
-          /opt/questasim/questasim/linux_x86_64/vsim -c -do "run -all; quit"
+          export PATH=/opt/questasim/questasim/linux_x86_64:$PATH
+          cd debug/sim
+          vsim -c -do questa_sim.do
