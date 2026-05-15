@@ -17,65 +17,31 @@
 
 
 module testbench;
-  
-  //clock and reset signal declaration
   bit clk;
   bit reset;
   
-  //clock generation
   always #5 clk = ~clk;
-  
-  //reset Generation
   initial begin
     reset = 0;
     #15 reset = 1;
   end
   
-  
-  //creatinng instance of interface, inorder to connect DUT and testcase
+  // 1. Instantiate Interfaces
   interface_output out_intf(clk, reset);
   interface_APB    apb_intf(clk, reset);
 
-  //Testcase instance, interface handles are passed to test as arguments
-  //test t1(out_intf, apb_intf);
-
-  logic [7:0]  tb_money_o;
-  logic [7:0]  tb_control_reg_o;
-  logic [7:0]  tb_item_o;
-
-
-
-  apb_protocol  #(
-
-  .ADDRESS_WIDTH  (8),
-  .WDATA_WIDTH    (8),
-  .RDATA_WIDTH    (8)
-
-  )DUT_APB(
-  .clk_i     	    (apb_intf.clk_i),
-  .rst_ni    	    (apb_intf.rst_ni),
-  .psel_i    	    (apb_intf.psel_i),
-  .penable_i 	    (apb_intf.penable_i),
-  .pwrite_i  	    (apb_intf.pwrite_i), 
-  .paddr_i        (apb_intf.paddr_i),
-  .pwdata_i       (apb_intf.pwdata_i),
-  .prdata_o       (apb_intf.prdata_o),
-  .pready_o  	    (apb_intf.pready_o),
-
-  //Dut specific connections  
-  .money_o       (tb_money_o),
-  .control_reg_o (tb_control_reg_o),
-  .item_o        (tb_item_o)
+  // Connect the full DUT, not just the protocol
+  vending_machine DUT (
+    .clk_i(clk), .rst_ni(reset),
+    .psel_i(apb_intf.psel_i), .penable_i(apb_intf.penable_i), 
+    .pwrite_i(apb_intf.pwrite_i), .paddr_i(apb_intf.paddr_i),
+    .pwdata_i(apb_intf.pwdata_i), .prdata_o(apb_intf.prdata_o),
+    .pready_o(apb_intf.pready_o),
+    .alarm_o(out_intf.alarm_o), .success_o(out_intf.success_o),
+    .change_o(out_intf.change_o)
   );
-  
-  //enabling the wave dump
-  initial begin 
-    $dumpfile("dump.vcd"); 
-    $dumpvars;
-    
-    // Add a delay to let the simulation run before stopping
-    #1000; 
-    $stop; 
-  end
+
+  // This matches the "program test" in default_rd_test.sv
+  test t1(out_intf, apb_intf); 
 
 endmodule
