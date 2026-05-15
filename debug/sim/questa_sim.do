@@ -9,10 +9,10 @@ vlog ../../hdl/*.v
 
 # Compile the specific test you want to run (e.g., default_rd_test.sv)
 # This provides the "program test" definition
-vlog ../tests/default_rd_test.sv
+vlog +incdir+../tb ../tests/default_rd_test.sv
 
 # Compile the testbench top with include directories for components
-vlog +incdir+../tb +incdir+../tests ../tb/testbench.sv 
+vlog +incdir+../tb +incdir+../tests ../tb/testbench.sv
 
 # Run simulation
 vsim -voptargs="+acc" testbench 
